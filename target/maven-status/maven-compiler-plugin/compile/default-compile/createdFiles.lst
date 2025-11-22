@@ -1,0 +1,14 @@
+edu/univ/erp/ui/student/TimetableWindow.class
+edu/univ/erp/ui/instructor/InstructorDashboard.class
+edu/univ/erp/ui/student/RegisterCoursesWindow.class
+edu/univ/erp/ui/student/DropCoursesWindow.class
+edu/univ/erp/ui/LoginWindow.class
+edu/univ/erp/ui/student/StudentDashboard.class
+edu/univ/erp/Main.class
+edu/univ/erp/auth/PasswordHasher.class
+edu/univ/erp/auth/LoginService.class
+edu/univ/erp/ui/student/CourseCatalogWindow.class
+edu/univ/erp/auth/LoginResult.class
+edu/univ/erp/ui/student/GradesWindow.class
+edu/univ/erp/ui/admin/AdminDashboard.class
+edu/univ/erp/data/AuthDB.class
