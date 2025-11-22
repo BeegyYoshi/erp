@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS sections (
     capacity INT CHECK (capacity >= 0),
     semester VARCHAR(20),
     year INT,
+    UNIQUE (course_id, section_id),
     FOREIGN KEY (course_id) REFERENCES courses(course_id),
     FOREIGN KEY (instructor_id) REFERENCES instructors(user_id)
 );

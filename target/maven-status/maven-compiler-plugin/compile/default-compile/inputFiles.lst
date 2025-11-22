@@ -1,14 +1,17 @@
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/ui/student/GradesWindow.java
+/Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/service/StudentService.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/Main.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/auth/LoginService.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/data/AuthDB.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/ui/LoginWindow.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/ui/admin/AdminDashboard.java
+/Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/data/CourseDAO.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/ui/student/StudentDashboard.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/ui/student/DropCoursesWindow.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/ui/student/CourseCatalogWindow.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/ui/student/TimetableWindow.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/ui/instructor/InstructorDashboard.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/auth/PasswordHasher.java
+/Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/data/ERPDB.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/ui/student/RegisterCoursesWindow.java
 /Users/yoshi/Advanced_Programming/erp/src/main/java/edu/univ/erp/auth/LoginResult.java

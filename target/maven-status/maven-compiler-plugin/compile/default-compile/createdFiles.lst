@@ -1,12 +1,16 @@
 edu/univ/erp/ui/student/TimetableWindow.class
 edu/univ/erp/ui/instructor/InstructorDashboard.class
+edu/univ/erp/data/ERPDB.class
 edu/univ/erp/ui/student/RegisterCoursesWindow.class
 edu/univ/erp/ui/student/DropCoursesWindow.class
+edu/univ/erp/data/CourseDAO.class
 edu/univ/erp/ui/LoginWindow.class
+edu/univ/erp/ui/student/CourseCatalogWindow$1.class
 edu/univ/erp/ui/student/StudentDashboard.class
 edu/univ/erp/Main.class
 edu/univ/erp/auth/PasswordHasher.class
 edu/univ/erp/auth/LoginService.class
+edu/univ/erp/service/StudentService.class
 edu/univ/erp/ui/student/CourseCatalogWindow.class
 edu/univ/erp/auth/LoginResult.class
 edu/univ/erp/ui/student/GradesWindow.class

@@ -1,5 +1,6 @@
 package edu.univ.erp.ui.student;
 
+import edu.univ.erp.ui.student.CourseCatalogWindow;
 import javax.swing.*;
 import java.awt.*;
 
