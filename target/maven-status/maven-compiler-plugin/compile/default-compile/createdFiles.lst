@@ -1,4 +1,5 @@
 edu/univ/erp/ui/student/TimetableWindow.class
+edu/univ/erp/ui/theme/CatppuccinTheme.class
 edu/univ/erp/ui/instructor/InstructorDashboard.class
 edu/univ/erp/data/ERPDB.class
 edu/univ/erp/ui/student/RegisterCoursesWindow.class

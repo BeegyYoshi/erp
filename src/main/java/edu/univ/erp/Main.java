@@ -3,15 +3,23 @@ import java.sql.Connection;
 
 import edu.univ.erp.auth.PasswordHasher;
 import edu.univ.erp.data.AuthDB;
+import edu.univ.erp.ui.theme.CatppuccinTheme;
+import com.formdev.flatlaf.FlatLaf;
 
 
 import edu.univ.erp.ui.LoginWindow;
 
 public class Main {
     public static void main(String[] args) {
-        LoginWindow.show();
-        System.out.println(PasswordHasher.hash("admin123"));
+        try {
+            javax.swing.UIManager.setLookAndFeel(new CatppuccinTheme());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
+        LoginWindow.show();
+
+        System.out.println(PasswordHasher.hash("admin123"));
 
         try (Connection conn = AuthDB.getConnection()) {
             System.out.println("Connected!");
