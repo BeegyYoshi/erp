@@ -10,29 +10,78 @@ public class EnrollmentDAO {
 
     // Register a student to a section
     public static boolean enrollStudent(int studentId, int sectionId) throws SQLException {
-        String sql = """
-            INSERT INTO enrollments (student_id, section_id)
-            VALUES (?, ?)
-            """;
 
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String checkCapacitySQL = """
+        SELECT capacity
+        FROM sections
+        WHERE section_id = ?
+        FOR UPDATE
+    """;
 
-            ps.setInt(1, studentId);
-            ps.setInt(2, sectionId);
+        String enrollSQL = """
+        INSERT INTO enrollments (student_id, section_id)
+        VALUES (?, ?)
+    """;
 
-            ps.executeUpdate();
-            return true;
-        }
-        catch (SQLException ex) {
-            System.out.println("INSERT FAILED");
-            System.out.println("SQL STATE: " + ex.getSQLState());
-            System.out.println("ERROR CODE: " + ex.getErrorCode());
-            // Error code 23000 = duplicate (unique key violation)
-            if ("23000".equals(ex.getSQLState())) {
-                return false;
+        String reduceCapacitySQL = """
+        UPDATE sections
+        SET capacity = capacity - 1
+        WHERE section_id = ?
+    """;
+
+        try (Connection conn = ERPDB.getConnection()) {
+
+            // IMPORTANT: Start transaction
+            conn.setAutoCommit(false);
+
+            // 1️⃣ Check capacity
+            int capacity = 0;
+            try (PreparedStatement ps = conn.prepareStatement(checkCapacitySQL)) {
+                ps.setInt(1, sectionId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        capacity = rs.getInt("capacity");
+                    } else {
+                        conn.rollback();
+                        throw new SQLException("Section not found: " + sectionId);
+                    }
+                }
             }
-            throw ex;
+
+            if (capacity <= 0) {
+                conn.rollback();
+                throw new SQLException("Section is full. Capacity = 0.");
+            }
+
+            // 2️⃣ Try enrolling the student
+            try (PreparedStatement ps = conn.prepareStatement(enrollSQL)) {
+                ps.setInt(1, studentId);
+                ps.setInt(2, sectionId);
+
+                ps.executeUpdate();  // may throw duplicate error
+            } catch (SQLException ex) {
+                conn.rollback();
+
+                if ("23000".equals(ex.getSQLState())) {
+                    // Unique constraint violation: student already enrolled
+                    return false;
+                }
+
+                throw ex;
+            }
+
+            // 3️⃣ Reduce capacity by 1
+            try (PreparedStatement ps = conn.prepareStatement(reduceCapacitySQL)) {
+                ps.setInt(1, sectionId);
+                ps.executeUpdate();
+            }
+
+            // 4️⃣ Commit transaction
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            throw e;
         }
     }
 

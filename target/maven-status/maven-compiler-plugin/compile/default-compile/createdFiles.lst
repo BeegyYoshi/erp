@@ -7,6 +7,7 @@ edu/univ/erp/data/ERPDB.class
 edu/univ/erp/ui/student/CourseCatalogPanel.class
 edu/univ/erp/data/CourseDAO.class
 edu/univ/erp/ui/LoginPanel.class
+edu/univ/erp/ui/student/RegisterCoursesPanel$1.class
 edu/univ/erp/data/EnrollmentDAO.class
 edu/univ/erp/ui/student/RegisterCoursesPanel.class
 edu/univ/erp/MainFrame.class
