@@ -1,6 +1,10 @@
 package edu.univ.erp.data;
 
 import java.sql.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 public class EnrollmentDAO {
 
@@ -51,7 +55,6 @@ public class EnrollmentDAO {
         }
     }
 
-    // Fetch all active enrollments for a student (for DropCoursesWindow)
     public static ResultSet fetchActiveEnrollments(int studentId) throws SQLException {
         String sql = """
             SELECT e.section_id, c.code, c.title
@@ -65,5 +68,41 @@ public class EnrollmentDAO {
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, studentId);
         return ps.executeQuery(); // caller must close
+    }
+    public static List<Map<String, Object>> fetchTimetable(int studentId) throws SQLException {
+        String sql = """
+        SELECT 
+            s.section_id,
+            c.code,
+            c.title,
+            s.day_time,
+            s.room
+        FROM enrollments e
+        JOIN sections s ON e.section_id = s.section_id
+        JOIN courses c ON s.course_id = c.course_id
+        WHERE e.student_id = ?
+          AND e.status = 'enrolled'
+        ORDER BY s.day_time
+    """;
+
+        List<Map<String, Object>> list = new ArrayList<>();
+
+        try (Connection conn = ERPDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, studentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("section_id", rs.getInt("section_id"));
+                    m.put("code", rs.getString("code"));
+                    m.put("title", rs.getString("title"));
+                    m.put("day_time", rs.getString("day_time"));
+                    m.put("room", rs.getString("room"));
+                    list.add(m);
+                }
+            }
+        }
+        return list;
     }
 }

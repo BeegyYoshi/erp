@@ -1,32 +1,29 @@
 package edu.univ.erp;
+
+import edu.univ.erp.data.AuthDB;
+import edu.univ.erp.MainFrame;
+import edu.univ.erp.ui.theme.CatppuccinTheme;
+
 import java.sql.Connection;
 
-import edu.univ.erp.auth.PasswordHasher;
-import edu.univ.erp.data.AuthDB;
-import edu.univ.erp.ui.theme.CatppuccinTheme;
-import com.formdev.flatlaf.FlatLaf;
-
-
-import edu.univ.erp.ui.LoginWindow;
-
 public class Main {
+
     public static void main(String[] args) {
+
         try {
             javax.swing.UIManager.setLookAndFeel(new CatppuccinTheme());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        LoginWindow.show();
+        // Launch the single Frame (with login screen inside)
+        new MainFrame();
 
-        System.out.println(PasswordHasher.hash("admin123"));
-
+        // Optional: DB connectivity test
         try (Connection conn = AuthDB.getConnection()) {
             System.out.println("Connected!");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-
 }
