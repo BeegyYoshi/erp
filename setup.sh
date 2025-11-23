@@ -6,6 +6,3 @@ echo ""
 sudo mariadb -u root -p"ROOTPASS" < ./src/resources/auth_db.sql
 sudo mariadb -u root -p"ROOTPASS" < ./src/resources/erp_db.sql
 sudo mariadb -u root -p"ROOTPASS" < ./src/resources/sample_data.sql
-
-mvn clean compile
-mvn exec:java
