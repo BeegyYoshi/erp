@@ -14,5 +14,6 @@ CREATE TABLE IF NOT EXISTS users_auth (
 INSERT INTO users_auth(username, role, password_hash)
 VALUES ("student1", "student", "$2a$10$ErhUrfb04gDiLz/SGm67rOih5LSx9jbZf8qIqt3ZdZhtNFpQlAvpW"), -- password: admin123
         ("instructor1", "instructor", "$2a$10$ErhUrfb04gDiLz/SGm67rOih5LSx9jbZf8qIqt3ZdZhtNFpQlAvpW"), -- password: admin123
-        ("admin1", "admin", "$2a$10$ErhUrfb04gDiLz/SGm67rOih5LSx9jbZf8qIqt3ZdZhtNFpQlAvpW") -- password: admin123
+        ("admin1", "admin", "$2a$10$ErhUrfb04gDiLz/SGm67rOih5LSx9jbZf8qIqt3ZdZhtNFpQlAvpW"), -- password: admin123
+        ("student2", "student", "$2a$10$ErhUrfb04gDiLz/SGm67rOih5LSx9jbZf8qIqt3ZdZhtNFpQlAvpW") -- password: admin123
 ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash);

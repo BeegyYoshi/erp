@@ -1,23 +1,23 @@
-USE auth_db;
+-- USE auth_db;
 
 -- Sample Instructor
-INSERT IGNORE INTO users_auth(username, role, password_hash)
-VALUES ("inst1", "instructor", "HASH_HERE");
+-- INSERT IGNORE INTO users_auth(username, role, password_hash)
+-- VALUES ("inst1", "instructor", "HASH_HERE");
 
 -- Sample Students
-INSERT IGNORE INTO users_auth(username, role, password_hash)
-VALUES ("stu1", "student", "HASH_HERE"),
-       ("stu2", "student", "HASH_HERE");
+-- INSERT IGNORE INTO users_auth(username, role, password_hash)
+-- VALUES ("stu1", "student", "HASH_HERE"),
+--        ("stu2", "student", "HASH_HERE");
 
 USE erp_db;
 
 -- Link ERP profiles to Auth DB
 INSERT IGNORE INTO instructors(user_id, department)
-VALUES (2, "CSE");  -- user_id = 2 is inst1
+VALUES (2, "CSE");  -- user_id = 2 is instructor1
 
 INSERT IGNORE INTO students(user_id, roll_no, program, year)
 VALUES
-(3, "2023STU1", "BTech CSE", 1),
+(1, "2023STU1", "BTech CSE", 1),
 (4, "2023STU2", "BTech CSE", 1);
 
 -- Courses
@@ -34,5 +34,5 @@ VALUES
 ON DUPLICATE KEY UPDATE capacity = VALUES(capacity);
 
 -- Example enrollment
-INSERT IGNORE INTO enrollments(student_id, section_id)
-VALUES (3, 1);  -- stu1 enrolled in CS101 section
+-- INSERT IGNORE INTO enrollments(student_id, section_id)
+-- VALUES (3, 1);  -- stu1 enrolled in CS101 section
