@@ -57,13 +57,11 @@ public class StudentDashboardPanel extends JPanel implements Refreshable {
         });
 
         // Timetable
-        /*
         btnTimetable.addActionListener(e -> {
             TimetablePanel p = new TimetablePanel(mainFrame, userId);
             mainFrame.loadPanel("timetable", p);
             mainFrame.showScreen("timetable");
         });
-         */
 
         // Grades
         /*

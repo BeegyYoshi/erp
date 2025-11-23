@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS enrollments (
     enrollment_id INT PRIMARY KEY AUTO_INCREMENT,
     student_id INT NOT NULL,
     section_id INT NOT NULL,
-    status ENUM('enrolled', 'dropped') DEFAULT 'enrolled',
+    status ENUM('enrolled', 'graded', 'dropped') DEFAULT 'enrolled',
     UNIQUE KEY uq_student_section (student_id, section_id),
     FOREIGN KEY (student_id) REFERENCES students(user_id),
     FOREIGN KEY (section_id) REFERENCES sections(section_id)

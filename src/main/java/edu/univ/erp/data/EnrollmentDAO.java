@@ -39,6 +39,23 @@ public class EnrollmentDAO {
     // Drop a registered course (change status)
     public static boolean dropEnrollment(int studentId, int sectionId) throws SQLException {
         String sql = """
+        DELETE FROM enrollments
+        WHERE student_id = ? AND section_id = ?
+    """;
+
+        try (Connection conn = ERPDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, studentId);
+            ps.setInt(2, sectionId);
+
+            int deleted = ps.executeUpdate();
+            return deleted > 0;  // true if a row was removed
+        }
+    }
+/*
+    public static boolean dropEnrollment(int studentId, int sectionId) throws SQLException {
+        String sql = """
             UPDATE enrollments
             SET status = 'dropped'
             WHERE student_id = ? AND section_id = ?
@@ -54,7 +71,7 @@ public class EnrollmentDAO {
             return updated > 0; // returns false if no row found
         }
     }
-
+*/
     public static ResultSet fetchActiveEnrollments(int studentId) throws SQLException {
         String sql = """
             SELECT e.section_id, c.code, c.title
