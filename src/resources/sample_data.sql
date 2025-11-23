@@ -27,10 +27,11 @@ VALUES
 ("CS102", "Data Structures", 4);
 
 -- Sections
-INSERT IGNORE INTO sections(course_id, instructor_id, day_time, room, capacity, semester, year)
+INSERT INTO sections(course_id, instructor_id, day_time, room, capacity, semester, year)
 VALUES
 (1, 2, "Mon 10-12", "A101", 40, "Fall", 2024),
-(2, 2, "Wed 2-4", "B202", 40, "Fall", 2024);
+(2, 2, "Wed 2-4", "B202", 40, "Fall", 2024)
+ON DUPLICATE KEY UPDATE capacity = VALUES(capacity);
 
 -- Example enrollment
 INSERT IGNORE INTO enrollments(student_id, section_id)
