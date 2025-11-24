@@ -3,6 +3,7 @@ package edu.univ.erp.ui;
 import edu.univ.erp.MainFrame;
 import edu.univ.erp.auth.LoginResult;
 import edu.univ.erp.auth.LoginService;
+import edu.univ.erp.ui.instructor.InstructorDashboardPanel;
 import edu.univ.erp.ui.student.StudentDashboardPanel;
 
 import javax.swing.*;
@@ -73,7 +74,7 @@ public class LoginPanel extends JPanel {
             JPanel dashboardPanel = switch (result.role) {
                 // case "admin"      -> new edu.univ.erp.ui.admin.AdminDashboard(mainFrame, result.userId);
                 case "student"    -> new StudentDashboardPanel(mainFrame, result.userId);
-                // case "instructor" -> new edu.univ.erp.ui.instructor.InstructorDashboard(mainFrame, result.userId);
+                case "instructor" -> new InstructorDashboardPanel(mainFrame, result.userId);
                 default -> {
                     JOptionPane.showMessageDialog(this, "Unknown role!");
                     yield null;

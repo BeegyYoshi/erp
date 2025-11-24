@@ -29,6 +29,7 @@ USE erp_db;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS grades;
+DROP TABLE IF EXISTS grade_components;
 DROP TABLE IF EXISTS enrollments;
 DROP TABLE IF EXISTS sections;
 DROP TABLE IF EXISTS courses;
