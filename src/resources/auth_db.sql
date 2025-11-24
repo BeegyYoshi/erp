@@ -2,14 +2,7 @@ CREATE DATABASE IF NOT EXISTS auth_db;
 USE auth_db;
 
 CREATE TABLE IF NOT EXISTS users_auth (
-    user_idCREATE TABLE IF NOT EXISTS users_auth (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    role ENUM('student', 'instructor', 'admin') NOT NULL,
-    password_hash VARCHAR(200) NOT NULL,
-    status VARCHAR(20) DEFAULT 'active',
-    last_login DATETIME
-); INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,
     role ENUM('student', 'instructor', 'admin') NOT NULL,
     password_hash VARCHAR(200) NOT NULL,

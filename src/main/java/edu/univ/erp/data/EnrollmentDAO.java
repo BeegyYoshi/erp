@@ -87,19 +87,45 @@ public class EnrollmentDAO {
 
     // Drop a registered course (change status)
     public static boolean dropEnrollment(int studentId, int sectionId) throws SQLException {
-        String sql = """
+        String deleteSql = """
         DELETE FROM enrollments
         WHERE student_id = ? AND section_id = ?
     """;
 
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String updateCapacitySql = """
+        UPDATE sections
+        SET capacity = capacity + 1
+        WHERE section_id = ?
+    """;
 
-            ps.setInt(1, studentId);
-            ps.setInt(2, sectionId);
+        try (Connection conn = ERPDB.getConnection()) {
+            conn.setAutoCommit(false); // START TRANSACTION
 
-            int deleted = ps.executeUpdate();
-            return deleted > 0;  // true if a row was removed
+            // --- 1. Delete the enrollment ---
+            int deleted;
+            try (PreparedStatement ps = conn.prepareStatement(deleteSql)) {
+                ps.setInt(1, studentId);
+                ps.setInt(2, sectionId);
+                deleted = ps.executeUpdate();
+            }
+
+            if (deleted == 0) {
+                conn.rollback();
+                return false; // no enrollment to delete
+            }
+
+            // --- 2. Increase capacity ---
+            try (PreparedStatement ps = conn.prepareStatement(updateCapacitySql)) {
+                ps.setInt(1, sectionId);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
         }
     }
 /*
@@ -121,20 +147,28 @@ public class EnrollmentDAO {
         }
     }
 */
-    public static ResultSet fetchActiveEnrollments(int studentId) throws SQLException {
-        String sql = """
-            SELECT e.section_id, c.code, c.title
-            FROM enrollments e
-            JOIN sections s ON e.section_id = s.section_id
-            JOIN courses c ON s.course_id = c.course_id
-            WHERE e.student_id = ? AND e.status = 'enrolled'
-            """;
+public static ResultSet fetchActiveEnrollments(int studentId) throws SQLException {
+    String sql = """
+        SELECT 
+            e.section_id,
+            c.code,
+            c.title,
+            s.day_time,
+            s.room,
+            u.username AS instructor
+        FROM enrollments e
+        JOIN sections s ON e.section_id = s.section_id
+        JOIN courses c ON s.course_id = c.course_id
+        JOIN auth_db.users_auth u ON s.instructor_id = u.user_id
+        WHERE e.student_id = ?
+          AND e.status = 'enrolled'
+    """;
 
-        Connection conn = ERPDB.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setInt(1, studentId);
-        return ps.executeQuery(); // caller must close
-    }
+    Connection conn = ERPDB.getConnection();
+    PreparedStatement ps = conn.prepareStatement(sql);
+    ps.setInt(1, studentId);
+    return ps.executeQuery();
+}
     public static List<Map<String, Object>> fetchTimetable(int studentId) throws SQLException {
         String sql = """
         SELECT 

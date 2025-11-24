@@ -29,7 +29,7 @@ VALUES
 -- Sections
 INSERT INTO sections(course_id, instructor_id, day_time, room, capacity, semester, year)
 VALUES
-(1, 2, "Mon 10-12", "A101", 40, "Fall", 2024),
+(1, 2, "Mon 10-12", "A101", 1, "Fall", 2024),
 (2, 2, "Wed 2-4", "B202", 40, "Fall", 2024)
 ON DUPLICATE KEY UPDATE capacity = VALUES(capacity);
 
