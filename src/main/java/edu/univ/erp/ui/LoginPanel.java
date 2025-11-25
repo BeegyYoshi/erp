@@ -13,6 +13,9 @@ public class LoginPanel extends JPanel {
 
     private final MainFrame mainFrame;
 
+    private int failedAttempts = 0;      // 🔥 Track failed attempts
+    private static final int MAX_ATTEMPTS = 3;
+
     public LoginPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         buildUI();
@@ -26,24 +29,22 @@ public class LoginPanel extends JPanel {
         gbc.insets = new Insets(12, 12, 12, 12);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Username label
+        // Username
         JLabel userLabel = new JLabel("Username:");
         userLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
         gbc.gridx = 0; gbc.gridy = 0;
         add(userLabel, gbc);
 
-        // Username field
         JTextField userField = new JTextField(18);
         gbc.gridx = 1;
         add(userField, gbc);
 
-        // Password label
+        // Password
         JLabel passLabel = new JLabel("Password:");
         passLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
         gbc.gridx = 0; gbc.gridy = 1;
         add(passLabel, gbc);
 
-        // Password field
         JPasswordField passField = new JPasswordField(18);
         gbc.gridx = 1;
         add(passField, gbc);
@@ -56,25 +57,67 @@ public class LoginPanel extends JPanel {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         add(loginBtn, gbc);
+        JButton changePassBtn = new JButton("Change Password");
+        changePassBtn.setPreferredSize(new Dimension(150, 28));
 
-        // Login Action
+        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(changePassBtn, gbc);
+
+        changePassBtn.addActionListener(e -> {
+            ChangePasswordPanel cp = new ChangePasswordPanel(mainFrame);
+            mainFrame.loadPanel("changePassword", cp);
+            mainFrame.showScreen("changePassword");
+        });
+
+        // Action
         loginBtn.addActionListener(e -> {
+
+            // 🔥 Stop login if locked out
+            if (failedAttempts >= MAX_ATTEMPTS) {
+                JOptionPane.showMessageDialog(this,
+                        "Too many failed attempts.\nLogin is locked.",
+                        "Locked Out",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             String username = userField.getText().trim();
             String password = new String(passField.getPassword()).trim();
 
             LoginResult result = LoginService.login(username, password);
+
             if (!result.ok) {
-                JOptionPane.showMessageDialog(
-                        this, result.error, "Login Error", JOptionPane.ERROR_MESSAGE
-                );
+                failedAttempts++;
+
+                if (failedAttempts >= MAX_ATTEMPTS) {
+                    loginBtn.setEnabled(false);   // disable button
+                    JOptionPane.showMessageDialog(this,
+                            "Too many failed attempts.\nLogin disabled.",
+                            "Locked",
+                            JOptionPane.ERROR_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Invalid username or password.\nAttempts left: " +
+                                    (MAX_ATTEMPTS - failedAttempts),
+                            "Login Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                }
                 return;
             }
 
-            // Create the dashboard panel based on role
+            // Successful login resets attempt count
+            failedAttempts = 0;
+
+            // Load dashboard panel
             JPanel dashboardPanel = switch (result.role) {
-                // case "admin"      -> new edu.univ.erp.ui.admin.AdminDashboard(mainFrame, result.userId);
-                case "student"    -> new StudentDashboardPanel(mainFrame, result.userId);
-                case "instructor" -> new InstructorDashboardPanel(mainFrame, result.userId);
+                case "student" ->
+                        new StudentDashboardPanel(mainFrame, result.userId);
+                case "instructor" ->
+                        new InstructorDashboardPanel(mainFrame, result.userId);
                 default -> {
                     JOptionPane.showMessageDialog(this, "Unknown role!");
                     yield null;
@@ -83,7 +126,6 @@ public class LoginPanel extends JPanel {
 
             if (dashboardPanel == null) return;
 
-            // Load and switch
             mainFrame.loadPanel(result.role, dashboardPanel);
             mainFrame.showScreen(result.role);
         });
