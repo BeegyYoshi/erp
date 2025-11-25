@@ -1,192 +1,15 @@
 package edu.univ.erp.data;
 
-import java.io.FileWriter;
+import java.io.*;
 import java.sql.*;
 import java.util.*;
+import java.util.List;
+import com.lowagie.text.*;
+import com.lowagie.text.pdf.*;
 
 public class GradeDAO {
 
-    /* --------------------------------------------------------
-       1. Fetch all final grades for a section
-    --------------------------------------------------------- */
-    public static List<Double> getFinalGradesForSection(int sectionId) throws SQLException {
 
-        String sql = """
-        SELECT final_grade 
-        FROM grades 
-        WHERE section_id = ?
-    """;
-
-        List<Double> list = new ArrayList<>();
-
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, sectionId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(rs.getDouble("final_grade"));
-                }
-            }
-        }
-        return list;
-    }
-
-    /* --------------------------------------------------------
-       2. Compute & save final grade for a student
-    --------------------------------------------------------- */
-    public static void computeAndSaveFinalGrade(int enrollmentId, int sectionId) throws SQLException {
-
-        String sql = """
-            SELECT gc.weight, gs.score
-            FROM grade_components gc
-            JOIN grade_scores gs ON gc.component_id = gs.component_id
-            WHERE gc.section_id = ? AND gs.enrollment_id = ?
-        """;
-
-        double total = 0;
-
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, sectionId);
-            ps.setInt(2, enrollmentId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    total += rs.getDouble("score") * (rs.getDouble("weight") / 100.0);
-                }
-            }
-        }
-
-        String letter = convertToLetter(total);
-
-        saveFinalGrade(enrollmentId, total, letter);
-    }
-
-    /* --------------------------------------------------------
-       3. Save or Update final grade
-    --------------------------------------------------------- */
-    public static void saveFinalGrade(int enrollmentId, double finalGrade, String letter)
-            throws SQLException {
-
-        String sql = """
-            INSERT INTO grades (enrollment_id, final_grade, letter_grade)
-            VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE 
-                final_grade = VALUES(final_grade),
-                letter_grade = VALUES(letter_grade)
-        """;
-
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, enrollmentId);
-            ps.setDouble(2, finalGrade);
-            ps.setString(3, letter);
-
-            ps.executeUpdate();
-        }
-    }
-
-    /* --------------------------------------------------------
-       4. Aggregate Statistics
-    --------------------------------------------------------- */
-
-    public static double getClassAverage(int sectionId) throws SQLException {
-        String sql = """
-            SELECT AVG(g.final_grade)
-            FROM grades g
-            JOIN enrollments e ON g.enrollment_id = e.enrollment_id
-            WHERE e.section_id = ?
-        """;
-
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, sectionId);
-            try (ResultSet rs = ps.executeQuery()) {
-                rs.next();
-                return rs.getDouble(1);
-            }
-        }
-    }
-
-    public static double getClassMin(int sectionId) throws SQLException {
-        String sql = """
-            SELECT MIN(g.final_grade)
-            FROM grades g
-            JOIN enrollments e ON g.enrollment_id = e.enrollment_id
-            WHERE e.section_id = ?
-        """;
-
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, sectionId);
-            try (ResultSet rs = ps.executeQuery()) {
-                rs.next();
-                return rs.getDouble(1);
-            }
-        }
-    }
-
-    public static double getClassMax(int sectionId) throws SQLException {
-        String sql = """
-            SELECT MAX(g.final_grade)
-            FROM grades g
-            JOIN enrollments e ON g.enrollment_id = e.enrollment_id
-            WHERE e.section_id = ?
-        """;
-
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, sectionId);
-            try (ResultSet rs = ps.executeQuery()) {
-                rs.next();
-                return rs.getDouble(1);
-            }
-        }
-    }
-
-    /* --------------------------------------------------------
-       5. Grade distribution (A,B,C,D,F)
-    --------------------------------------------------------- */
-    public static Map<String,Integer> getGradeDistribution(int sectionId) throws SQLException {
-
-        String sql = """
-            SELECT letter_grade, COUNT(*) AS cnt
-            FROM grades g
-            JOIN enrollments e ON g.enrollment_id = e.enrollment_id
-            WHERE e.section_id = ?
-            GROUP BY letter_grade
-        """;
-
-        Map<String,Integer> map = new HashMap<>();
-
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, sectionId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    map.put(rs.getString("letter_grade"), rs.getInt("cnt"));
-                }
-            }
-        }
-        return map;
-    }
-
-    /* --------------------------------------------------------
-       Helper
-    --------------------------------------------------------- */
-    private static String convertToLetter(double g) {
-        if (g >= 85) return "A";
-        if (g >= 75) return "B";
-        if (g >= 65) return "C";
-        if (g >= 50) return "D";
-        return "F";
-    }
 
     public static Map<String, Object> getClassStatistics(int sectionId) throws SQLException {
         String sql = """
@@ -443,25 +266,6 @@ public class GradeDAO {
      * Save or update a final grade row in grades table for given enrollment and section.
      * Uses UNIQUE(enrollment_id, section_id) in grades to upsert.
      */
-    public static void saveOrUpdateFinalGrade(int enrollmentId, int sectionId, double finalGrade, String letter)
-            throws SQLException {
-        String sql = """
-            INSERT INTO grades (enrollment_id, section_id, final_grade, letter_grade)
-            VALUES (?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE 
-                final_grade = VALUES(final_grade),
-                letter_grade = VALUES(letter_grade)
-        """;
-
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, enrollmentId);
-            ps.setInt(2, sectionId);
-            ps.setDouble(3, finalGrade);
-            ps.setString(4, letter);
-            ps.executeUpdate();
-        }
-    }
     public static String getCourseCodeForSection(int sectionId) throws SQLException {
         String sql = """
         SELECT c.code
@@ -484,5 +288,96 @@ public class GradeDAO {
 
         return "UNKNOWN";
     }
+    public static List<Map<String, Object>> getGradesForStudent(int studentId) throws SQLException {
 
+        String sql = """
+        SELECT 
+            g.final_grade, g.letter_grade,
+            c.code, c.title
+        FROM grades g
+        JOIN enrollments e ON g.enrollment_id = e.enrollment_id
+        JOIN sections s ON e.section_id = s.section_id
+        JOIN courses c ON s.course_id = c.course_id
+        WHERE e.student_id = ?
+    """;
+
+        List<Map<String, Object>> list = new ArrayList<>();
+
+        try (Connection conn = ERPDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, studentId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String,Object> map = new HashMap<>();
+                    map.put("code", rs.getString("code"));
+                    map.put("title", rs.getString("title"));
+                    map.put("final_grade", rs.getDouble("final_grade"));
+                    map.put("letter_grade", rs.getString("letter_grade"));
+                    list.add(map);
+                }
+            }
+        }
+
+        return list;
+    }
+    public static String getRollNo(int studentId) throws SQLException {
+
+        String sql = """
+        SELECT roll_no
+        FROM students
+        WHERE user_id = ?
+    """;
+
+        try (Connection conn = ERPDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, studentId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("roll_no");
+            }
+        }
+
+        return "UNKNOWN";
+    }
+    public static void exportTranscriptPDF(int studentId, String filePath) throws Exception {
+
+        // ---------- Fetch student roll number ----------
+        String rollNo = GradeDAO.getRollNo(studentId); // implement below
+
+        Document document = new Document(PageSize.A4);
+        PdfWriter.getInstance(document, new FileOutputStream(filePath));
+        document.open();
+
+        document.add(new Paragraph("Student Transcript"));
+        document.add(new Paragraph("Roll Number: " + rollNo));
+        document.add(new Paragraph("\n"));
+
+        List<Map<String, Object>> grades = GradeDAO.getGradesForStudent(studentId);
+
+        if (grades.isEmpty()) {
+            document.add(new Paragraph("No grades available."));
+            document.close();
+            return;
+        }
+
+        PdfPTable table = new PdfPTable(4);
+        table.addCell("Course Code");
+        table.addCell("Course Name");
+        table.addCell("Total Grade");
+        table.addCell("Letter");
+
+        for (Map<String, Object> row : grades) {
+
+            table.addCell(String.valueOf(row.getOrDefault("code", "")));
+            table.addCell(String.valueOf(row.getOrDefault("title", "")));
+            table.addCell(String.valueOf(row.getOrDefault("final_grade", "")));
+            table.addCell(String.valueOf(row.getOrDefault("letter_grade", "")));
+        }
+
+        document.add(table);
+        document.close();
+    }
 }

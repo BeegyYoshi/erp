@@ -119,27 +119,6 @@ public class InstructorDAO {
             }
         }
     }
-    public static void saveOrUpdateFinalGrade(int enrollmentId, double finalGrade, String letter)
-            throws SQLException {
-
-        String sql = """
-        INSERT INTO grades (enrollment_id, final_grade, letter_grade)
-        VALUES (?, ?, ?)
-        ON DUPLICATE KEY UPDATE final_grade = VALUES(final_grade),
-                                letter_grade = VALUES(letter_grade)
-    """;
-
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, enrollmentId);
-            ps.setDouble(2, finalGrade);
-            ps.setString(3, letter);
-
-            ps.executeUpdate();
-        }
-    }
-
         public static List<Map<String, Object>> getGradeComponents(int sectionId) throws SQLException {
             String sql = """
             SELECT component_id, component_name, weight
@@ -250,33 +229,6 @@ public class InstructorDAO {
             }
         }
 
-    /* --------------------------------------------------------
-       5. Check if all components have scores
-    --------------------------------------------------------- */
-        public static boolean areAllScoresPresent(int enrollmentId, int sectionId) throws SQLException {
-
-            String sql = """
-            SELECT 
-                (SELECT COUNT(*) FROM grade_components WHERE section_id = ?) AS total,
-                (SELECT COUNT(*) FROM grade_scores WHERE enrollment_id = ?) AS scored
-        """;
-
-            try (Connection conn = ERPDB.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-
-                ps.setInt(1, sectionId);
-                ps.setInt(2, enrollmentId);
-
-                try (ResultSet rs = ps.executeQuery()) {
-                    rs.next();
-                    return rs.getInt("total") == rs.getInt("scored");
-                }
-            }
-        }
-
-    /* --------------------------------------------------------
-       6. Compute weighted final grade
-    --------------------------------------------------------- */
         public static double computeFinalGrade(int enrollmentId, int sectionId) throws SQLException {
 
             String sql = """

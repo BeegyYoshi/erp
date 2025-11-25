@@ -64,13 +64,11 @@ public class StudentDashboardPanel extends JPanel implements Refreshable {
         });
 
         // Grades
-        /*
         btnGrades.addActionListener(e -> {
             GradesPanel p = new GradesPanel(mainFrame, userId);
             mainFrame.loadPanel("grades", p);
             mainFrame.showScreen("grades");
         });
-         */
 
         // Logout → back to login panel
         btnLogout.addActionListener(e -> {
