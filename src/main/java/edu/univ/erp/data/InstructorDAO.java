@@ -2,6 +2,7 @@ package edu.univ.erp.data;
 
 import java.sql.*;
 import java.util.*;
+import java.util.List;
 
 public class InstructorDAO {
     public static List<Map<String, Object>> fetchInstructorSections(int instructorId) throws SQLException {
@@ -36,33 +37,6 @@ public class InstructorDAO {
             }
         }
 
-        return list;
-    }
-
-    public static List<Map<String, Object>> getGradeComponents(int sectionId) throws SQLException {
-        String sql = """
-            SELECT component_id, component_name, weight
-            FROM grade_components
-            WHERE section_id = ?
-            ORDER BY component_id
-        """;
-
-        List<Map<String, Object>> list = new ArrayList<>();
-
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, sectionId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> row = new HashMap<>();
-                    row.put("component_id", rs.getInt("component_id"));
-                    row.put("component_name", rs.getString("component_name"));
-                    row.put("weight", rs.getDouble("weight"));
-                    list.add(row);
-                }
-            }
-        }
         return list;
     }
 
@@ -145,33 +119,9 @@ public class InstructorDAO {
             }
         }
     }
-    public static List<Map<String,Object>> getEnrolledStudents(int sectionId) throws SQLException {
-        String sql = """
-        SELECT e.enrollment_id, u.username AS student,
-               e.student_id
-        FROM enrollments e
-        JOIN users_auth u ON e.student_id = u.user_id
-        WHERE e.section_id = ? 
-          AND e.status = 'enrolled'
-    """;
+    public static void saveOrUpdateFinalGrade(int enrollmentId, double finalGrade, String letter)
+            throws SQLException {
 
-        List<Map<String,Object>> list = new ArrayList<>();
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, sectionId);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                Map<String,Object> m = new HashMap<>();
-                m.put("enrollment_id", rs.getInt("enrollment_id"));
-                m.put("student", rs.getString("student"));
-                list.add(m);
-            }
-        }
-        return list;
-    }
-    public static void saveFinalGrade(int enrollmentId, double finalGrade, String letter) throws SQLException {
         String sql = """
         INSERT INTO grades (enrollment_id, final_grade, letter_grade)
         VALUES (?, ?, ?)
@@ -185,6 +135,197 @@ public class InstructorDAO {
             ps.setInt(1, enrollmentId);
             ps.setDouble(2, finalGrade);
             ps.setString(3, letter);
+
+            ps.executeUpdate();
+        }
+    }
+
+        public static List<Map<String, Object>> getGradeComponents(int sectionId) throws SQLException {
+            String sql = """
+            SELECT component_id, component_name, weight
+            FROM grade_components
+            WHERE section_id = ?
+            ORDER BY component_id
+        """;
+
+            List<Map<String, Object>> list = new ArrayList<>();
+
+            try (Connection conn = ERPDB.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+                ps.setInt(1, sectionId);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, Object> m = new HashMap<>();
+                        m.put("component_id", rs.getInt("component_id"));
+                        m.put("component_name", rs.getString("component_name"));
+                        m.put("weight", rs.getDouble("weight"));
+                        list.add(m);
+                    }
+                }
+            }
+            return list;
+        }
+
+    /* --------------------------------------------------------
+       2. Get enrolled students for a section
+    --------------------------------------------------------- */
+        public static List<Map<String,Object>> getEnrolledStudents(int sectionId) throws SQLException {
+
+            String sql = """
+            SELECT e.enrollment_id, u.username AS student
+            FROM enrollments e
+            JOIN auth_db.users_auth u ON u.user_id = e.student_id
+            WHERE e.section_id = ?
+              AND e.status = 'enrolled'
+        """;
+
+            List<Map<String,Object>> list = new ArrayList<>();
+
+            try (Connection conn = ERPDB.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+                ps.setInt(1, sectionId);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String,Object> m = new HashMap<>();
+                        m.put("enrollment_id", rs.getInt("enrollment_id"));
+                        m.put("student", rs.getString("student"));
+                        list.add(m);
+                    }
+                }
+            }
+            return list;
+        }
+
+    /* --------------------------------------------------------
+       3. Fetch component scores for a given enrollment
+    --------------------------------------------------------- */
+        public static Map<Integer, Double> getScoresForStudent(int enrollmentId) throws SQLException {
+
+            String sql = """
+            SELECT component_id, score
+            FROM grade_scores
+            WHERE enrollment_id = ?
+        """;
+
+            Map<Integer, Double> scores = new HashMap<>();
+
+            try (Connection conn = ERPDB.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+                ps.setInt(1, enrollmentId);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        scores.put(rs.getInt("component_id"), rs.getDouble("score"));
+                    }
+                }
+            }
+            return scores;
+        }
+
+    /* --------------------------------------------------------
+       4. Insert OR update a score  (supports re-grading)
+    --------------------------------------------------------- */
+        public static void saveOrUpdateScore(int enrollmentId, int componentId, double score)
+            throws SQLException {
+
+            String sql = """
+            INSERT INTO grade_scores (enrollment_id, component_id, score)
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE score = VALUES(score)
+        """;
+
+            try (Connection conn = ERPDB.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+                ps.setInt(1, enrollmentId);
+                ps.setInt(2, componentId);
+                ps.setDouble(3, score);
+
+                ps.executeUpdate();
+            }
+        }
+
+    /* --------------------------------------------------------
+       5. Check if all components have scores
+    --------------------------------------------------------- */
+        public static boolean areAllScoresPresent(int enrollmentId, int sectionId) throws SQLException {
+
+            String sql = """
+            SELECT 
+                (SELECT COUNT(*) FROM grade_components WHERE section_id = ?) AS total,
+                (SELECT COUNT(*) FROM grade_scores WHERE enrollment_id = ?) AS scored
+        """;
+
+            try (Connection conn = ERPDB.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+                ps.setInt(1, sectionId);
+                ps.setInt(2, enrollmentId);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    rs.next();
+                    return rs.getInt("total") == rs.getInt("scored");
+                }
+            }
+        }
+
+    /* --------------------------------------------------------
+       6. Compute weighted final grade
+    --------------------------------------------------------- */
+        public static double computeFinalGrade(int enrollmentId, int sectionId) throws SQLException {
+
+            String sql = """
+            SELECT gc.weight, gs.score
+            FROM grade_components gc
+            JOIN grade_scores gs ON gc.component_id = gs.component_id
+            WHERE gc.section_id = ? AND gs.enrollment_id = ?
+        """;
+
+            double total = 0;
+
+            try (Connection conn = ERPDB.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+                ps.setInt(1, sectionId);
+                ps.setInt(2, enrollmentId);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        double weight = rs.getDouble("weight");
+                        double score = rs.getDouble("score");
+                        total += score * (weight / 100.0);
+                    }
+                }
+            }
+            return total;
+        }
+
+    /* --------------------------------------------------------
+       7. Save final grade & letter
+    --------------------------------------------------------- */
+    public static void saveFinalGrade(int enrollmentId, int sectionId, double finalGrade, String letter)
+            throws SQLException {
+
+        String sql = """
+        INSERT INTO grades (enrollment_id, section_id, final_grade, letter_grade)
+        VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE final_grade = VALUES(final_grade),
+                                letter_grade = VALUES(letter_grade)
+    """;
+
+        try (Connection conn = ERPDB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, enrollmentId);
+            ps.setInt(2, sectionId);
+            ps.setDouble(3, finalGrade);
+            ps.setString(4, letter);
+
             ps.executeUpdate();
         }
     }

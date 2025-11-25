@@ -55,9 +55,12 @@ CREATE TABLE IF NOT EXISTS enrollments (
 CREATE TABLE IF NOT EXISTS grades (
                                       grade_id INT PRIMARY KEY AUTO_INCREMENT,
                                       enrollment_id INT NOT NULL,
+                                      section_id INT NOT NULL,
                                       final_grade DOUBLE,
                                       letter_grade VARCHAR(5),
-    FOREIGN KEY (enrollment_id) REFERENCES enrollments(enrollment_id)
+    UNIQUE(enrollment_id, section_id),
+    FOREIGN KEY (enrollment_id) REFERENCES enrollments(enrollment_id),
+    FOREIGN KEY (section_id) REFERENCES sections(section_id)
     );
 
 -- GRADE COMPONENTS TABLE
@@ -67,6 +70,18 @@ CREATE TABLE grade_components (
                                   component_name VARCHAR(50),
                                   weight DOUBLE,
                                   FOREIGN KEY (section_id) REFERENCES sections(section_id)
+);
+
+CREATE TABLE grade_scores (
+                              score_id INT AUTO_INCREMENT PRIMARY KEY,
+                              enrollment_id INT NOT NULL,
+                              component_id INT NOT NULL,
+                              score DOUBLE,
+
+                              UNIQUE (enrollment_id, component_id),
+
+                              FOREIGN KEY (component_id) REFERENCES grade_components(component_id),
+                              FOREIGN KEY (enrollment_id) REFERENCES enrollments(enrollment_id)
 );
 
 -- GLOBAL SETTINGS TABLE (Maintenance Mode lives here)

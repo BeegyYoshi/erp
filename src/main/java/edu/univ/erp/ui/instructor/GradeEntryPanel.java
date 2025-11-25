@@ -40,8 +40,8 @@ public class GradeEntryPanel extends JPanel implements Refreshable {
 
         model = new DefaultTableModel() {
             @Override public boolean isCellEditable(int row, int col) {
-                // Student name + final grade + letter grade NOT editable
-                return col >= 1 && col < getColumnCount()-2;
+                // Only component score cells are editable
+                return col >= 1 && col < getColumnCount() - 2;
             }
         };
 
@@ -75,24 +75,47 @@ public class GradeEntryPanel extends JPanel implements Refreshable {
             return;
         }
 
-        // Build column headers
+        // Build columns
         model.addColumn("Student");
-        for (Map<String,Object> c : components) {
+
+        for (Map<String,Object> c : components)
             model.addColumn(c.get("component_name"));
-        }
+
         model.addColumn("Final Grade");
         model.addColumn("Letter");
 
-        // Add rows
+        // Populate table
         for (Map<String,Object> st : students) {
+            int enrollmentId = (int) st.get("enrollment_id");
+
+            Map<Integer,Double> savedScores;
+            try {
+                savedScores = InstructorDAO.getScoresForStudent(enrollmentId);
+            } catch (SQLException e) {
+                savedScores = new HashMap<>();
+            }
+
             Object[] row = new Object[components.size() + 3];
             row[0] = st.get("student");
 
-            for (int i = 0; i < components.size(); i++)
-                row[i+1] = "";  // blank score entry
+            for (int i = 0; i < components.size(); i++) {
+                int compId = (int) components.get(i).get("component_id");
+                row[i+1] = savedScores.getOrDefault(compId, null);
+            }
 
-            row[row.length-2] = ""; // final
-            row[row.length-1] = ""; // letter
+            try {
+                if (!savedScores.isEmpty()) {
+                    double finalGrade = InstructorDAO.computeFinalGrade(enrollmentId, sectionId);
+                    row[row.length-2] = finalGrade;
+                    row[row.length-1] = gradeToLetter(finalGrade);
+                } else {
+                    row[row.length-2] = "";
+                    row[row.length-1] = "";
+                }
+            } catch (SQLException e) {
+                row[row.length-2] = "";
+                row[row.length-1] = "";
+            }
 
             model.addRow(row);
         }
@@ -102,41 +125,55 @@ public class GradeEntryPanel extends JPanel implements Refreshable {
     }
 
     private void saveGrades() {
+
         for (int r = 0; r < model.getRowCount(); r++) {
 
             int enrollmentId = (int) students.get(r).get("enrollment_id");
 
-            double finalGrade = computeFinalGrade(r);
-            String letter = gradeToLetter(finalGrade);
+            // Save each component score
+            for (int c = 0; c < components.size(); c++) {
+                Object val = model.getValueAt(r, c+1);
 
-            try {
-                InstructorDAO.saveFinalGrade(enrollmentId, finalGrade, letter);
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, "Error saving grade for row " + r);
+                if (val == null || val.toString().trim().isEmpty()) {
+                    continue; // empty means no update
+                }
+
+                try {
+                    double score = Double.parseDouble(val.toString().trim());
+                    int compId = (int) components.get(c).get("component_id");
+                    InstructorDAO.saveOrUpdateScore(enrollmentId, compId, score);
+                }
+                catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this,
+                            "Invalid number for student '"
+                                    + model.getValueAt(r,0)
+                                    + "' in component '"
+                                    + components.get(c).get("component_name") + "'");
+                    return;
+                }
+                catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this,
+                            "DB error saving score:\n" + ex.getMessage());
+                    return;
+                }
             }
 
-            model.setValueAt(finalGrade, r, model.getColumnCount()-2);
-            model.setValueAt(letter, r, model.getColumnCount()-1);
+            // Compute final grade
+            try {
+                double finalGrade = InstructorDAO.computeFinalGrade(enrollmentId, sectionId);
+                String letter = gradeToLetter(finalGrade);
+
+                InstructorDAO.saveFinalGrade(enrollmentId, sectionId, finalGrade, letter);
+
+                model.setValueAt(finalGrade, r, model.getColumnCount()-2);
+                model.setValueAt(letter, r, model.getColumnCount()-1);
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Failed computing final grade");
+            }
         }
 
         JOptionPane.showMessageDialog(this, "Grades saved!");
-    }
-
-    private double computeFinalGrade(int row) {
-        double total = 0;
-
-        for (int i = 0; i < components.size(); i++) {
-            String value = model.getValueAt(row, i+1).toString().trim();
-            if (!value.isEmpty()) {
-                try {
-                    double score = Double.parseDouble(value);
-                    double weight = ((Number) components.get(i).get("weight")).doubleValue();
-                    total += score * (weight / 100.0);
-                } catch (Exception ignore) {}
-            }
-        }
-
-        return total;
     }
 
     private String gradeToLetter(double g) {
