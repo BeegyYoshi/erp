@@ -3,6 +3,7 @@ package edu.univ.erp.ui.instructor;
 import edu.univ.erp.MainFrame;
 import edu.univ.erp.interfaces.Refreshable;
 import edu.univ.erp.data.InstructorDAO;
+import edu.univ.erp.data.SettingsDAO;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -38,11 +39,10 @@ public class AssessmentEditorPanel extends JPanel implements Refreshable {
         title.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
         add(title, BorderLayout.NORTH);
 
-        // Only 2 columns now: Component + Weight
         String[] cols = {"Component", "Weight (%)"};
         model = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) {
-                return false;
+                return false;   // view only
             }
         };
 
@@ -97,6 +97,18 @@ public class AssessmentEditorPanel extends JPanel implements Refreshable {
     }
 
     private void addComponent() {
+
+        // ⛔ Maintenance mode check
+        try {
+            if (SettingsDAO.isMaintenanceOn()) {
+                JOptionPane.showMessageDialog(this,
+                        "Maintenance mode is ON — edits are not allowed.",
+                        "Edit Blocked",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        } catch (Exception ignored) {}
+
         String name = nameField.getText().trim();
         double weight;
 
@@ -131,6 +143,18 @@ public class AssessmentEditorPanel extends JPanel implements Refreshable {
     }
 
     private void deleteSelectedComponent() {
+
+        // ⛔ Maintenance mode check
+        try {
+            if (SettingsDAO.isMaintenanceOn()) {
+                JOptionPane.showMessageDialog(this,
+                        "Maintenance mode is ON — edits are not allowed.",
+                        "Edit Blocked",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        } catch (Exception ignored) {}
+
         int row = table.getSelectedRow();
 
         if (row == -1) {

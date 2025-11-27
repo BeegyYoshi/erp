@@ -40,6 +40,19 @@ public class MainFrame extends JFrame {
 
     // Switch to a panel
     public void showScreen(String name) {
+        JPanel panel = screens.get(name);
+
+        if (panel == null) {
+            System.err.println("Panel not found: " + name);
+            return;
+        }
+
+        // If the panel supports refresh, call it
+        if (panel instanceof edu.univ.erp.interfaces.Refreshable refreshable) {
+            refreshable.refresh();
+        }
+
         layout.show(container, name);
     }
+
 }

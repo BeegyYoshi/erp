@@ -10,11 +10,14 @@ public class Main {
 
     public static void main(String[] args) {
 
+        /*
         try {
             javax.swing.UIManager.setLookAndFeel(new CatppuccinTheme());
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+         */
 
         // Launch the single Frame (with login screen inside)
         new MainFrame();

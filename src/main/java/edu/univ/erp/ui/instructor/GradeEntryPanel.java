@@ -3,6 +3,8 @@ package edu.univ.erp.ui.instructor;
 import edu.univ.erp.MainFrame;
 import edu.univ.erp.interfaces.Refreshable;
 import edu.univ.erp.data.InstructorDAO;
+import edu.univ.erp.data.SettingsDAO;
+
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -123,8 +125,24 @@ public class GradeEntryPanel extends JPanel implements Refreshable {
         revalidate();
         repaint();
     }
-
     private void saveGrades() {
+
+        // ---------- Maintenance Mode Check ----------
+        try {
+            if (SettingsDAO.isMaintenanceOn()) {
+                JOptionPane.showMessageDialog(this,
+                        "Maintenance mode is ON — No grading allowed.",
+                        "Access Blocked",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Failed to check maintenance setting:\n" + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         for (int r = 0; r < model.getRowCount(); r++) {
 
@@ -132,10 +150,10 @@ public class GradeEntryPanel extends JPanel implements Refreshable {
 
             // Save each component score
             for (int c = 0; c < components.size(); c++) {
-                Object val = model.getValueAt(r, c+1);
+                Object val = model.getValueAt(r, c + 1);
 
                 if (val == null || val.toString().trim().isEmpty()) {
-                    continue; // empty means no update
+                    continue; // skip blanks
                 }
 
                 try {
@@ -146,7 +164,7 @@ public class GradeEntryPanel extends JPanel implements Refreshable {
                 catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(this,
                             "Invalid number for student '"
-                                    + model.getValueAt(r,0)
+                                    + model.getValueAt(r, 0)
                                     + "' in component '"
                                     + components.get(c).get("component_name") + "'");
                     return;
@@ -165,8 +183,8 @@ public class GradeEntryPanel extends JPanel implements Refreshable {
 
                 InstructorDAO.saveFinalGrade(enrollmentId, sectionId, finalGrade, letter);
 
-                model.setValueAt(finalGrade, r, model.getColumnCount()-2);
-                model.setValueAt(letter, r, model.getColumnCount()-1);
+                model.setValueAt(finalGrade, r, model.getColumnCount() - 2);
+                model.setValueAt(letter, r, model.getColumnCount() - 1);
 
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(this, "Failed computing final grade");
