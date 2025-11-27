@@ -40,12 +40,14 @@ public class AdminDashboardPanel extends JPanel {
         JButton btnSections = styledButton("Manage Sections");
         JButton btnMaintenance = styledButton("Maintenance Mode");
         JButton btnLogout = styledButton("Logout");
+        JButton btnBackup = styledButton("Backup / Restore Database");
 
         btnPanel.add(btnUsers);
         btnPanel.add(btnCourses);
         btnPanel.add(btnSections);
         btnPanel.add(btnMaintenance);
         btnPanel.add(btnLogout);
+        btnPanel.add(btnBackup);
 
         add(btnPanel, BorderLayout.CENTER);
 
@@ -73,6 +75,13 @@ public class AdminDashboardPanel extends JPanel {
             mainFrame.loadPanel("admin_maintenance", panel);
             mainFrame.showScreen("admin_maintenance");
         });
+
+        btnBackup.addActionListener(e -> {
+            AdminBackupPanel p = new AdminBackupPanel(mainFrame);
+            mainFrame.loadPanel("admin_backup", p);
+            mainFrame.showScreen("admin_backup");
+        });
+
 
         btnLogout.addActionListener(e -> mainFrame.showScreen("login"));
     }

@@ -2,6 +2,7 @@ edu/univ/erp/ui/student/CourseCatalogPanel$1.class
 edu/univ/erp/ui/instructor/InstructorDashboardPanel.class
 edu/univ/erp/data/ERPDB.class
 edu/univ/erp/ui/admin/AdminManageCoursesPanel$1.class
+edu/univ/erp/ui/admin/AdminBackupPanel$1.class
 edu/univ/erp/ui/admin/AdminManageSectionsPanel.class
 edu/univ/erp/ui/instructor/InstructorDashboardPanel$1.class
 edu/univ/erp/ui/instructor/ClassStatisticsPanel.class
@@ -32,10 +33,12 @@ edu/univ/erp/ui/student/DropCoursesPanel.class
 edu/univ/erp/Main.class
 edu/univ/erp/ui/admin/AdminManageSectionsPanel$1.class
 edu/univ/erp/ui/admin/AdminManageUsersPanel$1.class
+edu/univ/erp/ui/admin/AdminBackupPanel.class
 edu/univ/erp/ui/admin/AdminDashboardPanel.class
 edu/univ/erp/ui/admin/AdminMaintenancePanel.class
 edu/univ/erp/ui/student/RegisterCoursesPanel$2.class
 edu/univ/erp/ui/student/TimetablePanel$1.class
+edu/univ/erp/data/BackupDAO.class
 edu/univ/erp/ui/student/GradesPanel$2.class
 edu/univ/erp/ui/instructor/AssessmentEditorPanel$1.class
 edu/univ/erp/data/EnrollmentDAO.class
@@ -63,3 +66,4 @@ edu/univ/erp/ui/instructor/GradeEntryPanel$1.class
 edu/univ/erp/ui/instructor/SectionDashboardPanel.class
 edu/univ/erp/ui/instructor/ClassStatisticsPanel$1.class
 edu/univ/erp/ui/instructor/MySectionsPanel$1.class
+edu/univ/erp/ui/admin/AdminBackupPanel$2.class
