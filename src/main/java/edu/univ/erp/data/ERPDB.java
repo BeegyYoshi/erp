@@ -7,8 +7,8 @@ import java.sql.SQLException;
 
 public class ERPDB {
     private static final String URL = "jdbc:mariadb://localhost:3306/erp_db";
-    private static final String USER = "root";
-    private static final String PASS = "Mickey007";
+    private static final String USER = "appuser";
+    private static final String PASS = "password123";
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASS);
     }

@@ -34,5 +34,5 @@ VALUES
 ON DUPLICATE KEY UPDATE capacity = VALUES(capacity);
 
 -- Example enrollment
--- INSERT IGNORE INTO enrollments(student_id, section_id)
--- VALUES (3, 1);  -- stu1 enrolled in CS101 section
+INSERT IGNORE INTO enrollments(student_id, section_id)
+VALUES (1, 2);  -- stu1 enrolled in CS101 section

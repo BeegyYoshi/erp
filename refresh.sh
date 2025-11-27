@@ -40,6 +40,8 @@ DROP TABLE IF EXISTS settings;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+DROP USER IF EXISTS 'appuser'@'localhost';
+
 EOF
 
 echo "Done. All tables deleted. AUTO_INCREMENT reset."

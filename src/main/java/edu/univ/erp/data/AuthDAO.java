@@ -31,7 +31,7 @@ public class AuthDAO {
                 String storedHash = rs.getString("password_hash");
 
                 // Check old password
-                if (!BCrypt.checkpw(oldPass, storedHash)) {
+                if (!PasswordHasher.verify(oldPass, storedHash)) {
                     return false;
                 }
 
