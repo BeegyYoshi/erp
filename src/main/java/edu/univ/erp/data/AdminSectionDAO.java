@@ -69,35 +69,6 @@ public class AdminSectionDAO {
         }
     }
 
-    public static boolean updateSection(
-            int sectionId, int courseId, Integer instructorId, String dayTime,
-            String room, int capacity, String semester, int year
-    ) throws SQLException {
-
-        String sql = """
-            UPDATE sections
-            SET course_id = ?, instructor_id = ?, day_time = ?, room = ?,
-                capacity = ?, semester = ?, year = ?
-            WHERE section_id = ?
-        """;
-
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, courseId);
-            if (instructorId == null) ps.setNull(2, Types.INTEGER);
-            else ps.setInt(2, instructorId);
-            ps.setString(3, dayTime);
-            ps.setString(4, room);
-            ps.setInt(5, capacity);
-            ps.setString(6, semester);
-            ps.setInt(7, year);
-            ps.setInt(8, sectionId);
-
-            return ps.executeUpdate() > 0;
-        }
-    }
-
     public static boolean deleteSection(int sectionId) throws SQLException {
         // enforce: cannot delete if enrollments exist
         String check = "SELECT COUNT(*) FROM enrollments WHERE section_id = ?";

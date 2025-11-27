@@ -35,7 +35,6 @@ edu/univ/erp/ui/admin/AdminManageUsersPanel$1.class
 edu/univ/erp/ui/admin/AdminDashboardPanel.class
 edu/univ/erp/ui/admin/AdminMaintenancePanel.class
 edu/univ/erp/ui/student/RegisterCoursesPanel$2.class
-edu/univ/erp/ui/theme/CatppuccinTheme.class
 edu/univ/erp/ui/student/TimetablePanel$1.class
 edu/univ/erp/ui/student/GradesPanel$2.class
 edu/univ/erp/ui/instructor/AssessmentEditorPanel$1.class

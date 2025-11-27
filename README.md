@@ -26,3 +26,6 @@ Run following shell scripts\
 
 Every subsequent time you wish to run program, do\
 `./run.sh`
+
+### How to run tests
+`mvn clean test`

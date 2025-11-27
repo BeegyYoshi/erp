@@ -128,25 +128,7 @@ public class EnrollmentDAO {
             throw e;
         }
     }
-/*
-    public static boolean dropEnrollment(int studentId, int sectionId) throws SQLException {
-        String sql = """
-            UPDATE enrollments
-            SET status = 'dropped'
-            WHERE student_id = ? AND section_id = ?
-            """;
 
-        try (Connection conn = ERPDB.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, studentId);
-            ps.setInt(2, sectionId);
-
-            int updated = ps.executeUpdate();
-            return updated > 0; // returns false if no row found
-        }
-    }
-*/
 public static ResultSet fetchActiveEnrollments(int studentId) throws SQLException {
     String sql = """
         SELECT 
