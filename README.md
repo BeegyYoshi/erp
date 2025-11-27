@@ -29,3 +29,5 @@ Every subsequent time you wish to run program, do\
 
 ### How to run tests
 `mvn clean test`
+
+Other materials like reports, demos etc. are in materials
