@@ -8,6 +8,12 @@ public class AdminDashboardPanel extends JPanel {
 
     private final MainFrame mainFrame;
 
+    // ---- Theme Colors ----
+    private static final Color BG_DARK = new Color(30, 30, 30);
+    private static final Color PANEL_DARK = new Color(45, 45, 45);
+    private static final Color TEXT_LIGHT = new Color(230, 230, 230);
+    private static final Color ACCENT = Color.decode("#39AEA8");
+
     public AdminDashboardPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         buildUI();
@@ -15,23 +21,35 @@ public class AdminDashboardPanel extends JPanel {
 
     private void buildUI() {
         setLayout(new BorderLayout());
+        setBackground(BG_DARK);
 
+        // ---- Title ----
         JLabel title = new JLabel("Admin Dashboard", SwingConstants.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 24));
+        title.setFont(new Font("SansSerif", Font.BOLD, 30));
+        title.setForeground(ACCENT);
         title.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         add(title, BorderLayout.NORTH);
 
-        JPanel btnPanel = new JPanel(new GridLayout(6, 1, 10, 10));
-        btnPanel.setBorder(BorderFactory.createEmptyBorder(20, 60, 20, 60));
+        // ---- Button Panel ----
+        JPanel btnPanel = new JPanel(new GridLayout(5, 1, 15, 15));
+        btnPanel.setBorder(BorderFactory.createEmptyBorder(20, 80, 20, 80));
+        btnPanel.setBackground(BG_DARK);
 
-        JButton btnUsers = new JButton("Manage Users");
-        JButton btnCourses = new JButton("Manage Courses");
-        JButton btnSections = new JButton("Manage Sections");
-        JButton btnMaintenance = new JButton("Maintenance Mode");
-        JButton btnLogout = new JButton("Logout");
+        JButton btnUsers = styledButton("Manage Users");
+        JButton btnCourses = styledButton("Manage Courses");
+        JButton btnSections = styledButton("Manage Sections");
+        JButton btnMaintenance = styledButton("Maintenance Mode");
+        JButton btnLogout = styledButton("Logout");
 
-        // ===== BUTTON ACTIONS =====
+        btnPanel.add(btnUsers);
+        btnPanel.add(btnCourses);
+        btnPanel.add(btnSections);
+        btnPanel.add(btnMaintenance);
+        btnPanel.add(btnLogout);
 
+        add(btnPanel, BorderLayout.CENTER);
+
+        // ---- Actions ----
         btnUsers.addActionListener(e -> {
             AdminManageUsersPanel panel = new AdminManageUsersPanel(mainFrame);
             mainFrame.loadPanel("admin_users", panel);
@@ -56,16 +74,30 @@ public class AdminDashboardPanel extends JPanel {
             mainFrame.showScreen("admin_maintenance");
         });
 
-        btnLogout.addActionListener(e -> {
-            mainFrame.showScreen("login");
+        btnLogout.addActionListener(e -> mainFrame.showScreen("login"));
+    }
+
+    // ---- Styled Button ----
+    private JButton styledButton(String text) {
+        JButton btn = new JButton(text);
+
+        btn.setFont(new Font("SansSerif", Font.BOLD, 18));
+        btn.setBackground(ACCENT);
+        btn.setForeground(Color.BLACK);
+        btn.setFocusPainted(false);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
+
+        // Hover effect
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btn.setBackground(ACCENT.brighter());
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn.setBackground(ACCENT);
+            }
         });
 
-        btnPanel.add(btnUsers);
-        btnPanel.add(btnCourses);
-        btnPanel.add(btnSections);
-        btnPanel.add(btnMaintenance);
-        btnPanel.add(btnLogout);
-
-        add(btnPanel, BorderLayout.CENTER);
+        return btn;
     }
 }

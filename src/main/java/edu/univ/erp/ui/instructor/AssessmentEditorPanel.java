@@ -7,6 +7,7 @@ import edu.univ.erp.data.SettingsDAO;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
@@ -23,6 +24,12 @@ public class AssessmentEditorPanel extends JPanel implements Refreshable {
     private JTextField nameField;
     private JTextField weightField;
 
+    // ---- Theme Colors ----
+    private static final Color BG_DARK = new Color(30, 30, 30);
+    private static final Color PANEL_DARK = new Color(45, 45, 45);
+    private static final Color TEXT_LIGHT = new Color(230, 230, 230);
+    private static final Color ACCENT = Color.decode("#39AEA8");
+
     public AssessmentEditorPanel(MainFrame mainFrame, int sectionId) {
         this.mainFrame = mainFrame;
         this.sectionId = sectionId;
@@ -33,38 +40,61 @@ public class AssessmentEditorPanel extends JPanel implements Refreshable {
 
     private void buildUI() {
         setLayout(new BorderLayout());
+        setBackground(BG_DARK);
 
+        // ---- Title ----
         JLabel title = new JLabel("Assessment Components", SwingConstants.CENTER);
-        title.setFont(new Font("SansSerif", Font.BOLD, 22));
+        title.setFont(new Font("SansSerif", Font.BOLD, 30));
+        title.setForeground(ACCENT);
         title.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
         add(title, BorderLayout.NORTH);
 
+        // ---- Table Setup ----
         String[] cols = {"Component", "Weight (%)"};
+
         model = new DefaultTableModel(cols, 0) {
             @Override public boolean isCellEditable(int r, int c) {
-                return false;   // view only
+                return false;
             }
         };
 
         table = new JTable(model);
         table.setRowHeight(28);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setBackground(PANEL_DARK);
+        table.setForeground(TEXT_LIGHT);
+        table.setSelectionBackground(ACCENT);
+        table.setSelectionForeground(Color.BLACK);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        table.setGridColor(ACCENT.darker());
 
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        JTableHeader header = table.getTableHeader();
+        header.setBackground(ACCENT);
+        header.setForeground(Color.BLACK);
+        header.setFont(new Font("SansSerif", Font.BOLD, 15));
+        header.setReorderingAllowed(false);
 
-        // bottom panel (add + delete)
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JScrollPane sp = new JScrollPane(table);
+        sp.getViewport().setBackground(BG_DARK);
+        sp.setBorder(BorderFactory.createEmptyBorder());
+        add(sp, BorderLayout.CENTER);
 
-        nameField = new JTextField(12);
-        weightField = new JTextField(5);
+        // ---- Bottom Input + Buttons ----
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
+        bottom.setBackground(BG_DARK);
 
-        JButton addBtn = new JButton("Add");
-        JButton deleteBtn = new JButton("Delete Selected");
-        JButton backBtn = new JButton("Back");
+        nameField = styledTextField(12);
+        weightField = styledTextField(5);
 
-        bottom.add(new JLabel("Name:"));
+        JLabel nameLbl = styledLabel("Name:");
+        JLabel weightLbl = styledLabel("Weight:");
+
+        JButton addBtn = styledButton("Add");
+        JButton deleteBtn = styledButton("Delete Selected");
+        JButton backBtn = styledButton("Back");
+
+        bottom.add(nameLbl);
         bottom.add(nameField);
-        bottom.add(new JLabel("Weight:"));
+        bottom.add(weightLbl);
         bottom.add(weightField);
         bottom.add(addBtn);
         bottom.add(deleteBtn);
@@ -72,11 +102,58 @@ public class AssessmentEditorPanel extends JPanel implements Refreshable {
 
         add(bottom, BorderLayout.SOUTH);
 
+        // ---- Actions ----
         addBtn.addActionListener(e -> addComponent());
         deleteBtn.addActionListener(e -> deleteSelectedComponent());
         backBtn.addActionListener(e -> mainFrame.showScreen("section_dash_" + sectionId));
     }
 
+    // ---- Styled TextField ----
+    private JTextField styledTextField(int cols) {
+        JTextField tf = new JTextField(cols);
+        tf.setBackground(PANEL_DARK);
+        tf.setForeground(TEXT_LIGHT);
+        tf.setCaretColor(TEXT_LIGHT);
+        tf.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT, 1),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+        tf.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        return tf;
+    }
+
+    // ---- Styled Label ----
+    private JLabel styledLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setForeground(TEXT_LIGHT);
+        lbl.setFont(new Font("SansSerif", Font.BOLD, 16));
+        return lbl;
+    }
+
+    // ---- Styled Button ----
+    private JButton styledButton(String text) {
+        JButton btn = new JButton(text);
+
+        btn.setFont(new Font("SansSerif", Font.BOLD, 16));
+        btn.setBackground(ACCENT);
+        btn.setForeground(Color.BLACK);
+        btn.setBorder(BorderFactory.createEmptyBorder(8, 18, 8, 18));
+        btn.setFocusPainted(false);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btn.setBackground(ACCENT.brighter());
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn.setBackground(ACCENT);
+            }
+        });
+
+        return btn;
+    }
+
+    // ---- Refresh Components ----
     @Override
     public void refresh() {
         model.setRowCount(0);
@@ -92,18 +169,24 @@ public class AssessmentEditorPanel extends JPanel implements Refreshable {
             }
 
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Failed to load components\n" + e.getMessage());
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Failed to load components\n" + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
+    // ---- Add Component ----
     private void addComponent() {
 
-        // ⛔ Maintenance mode check
+        // Maintenance mode check
         try {
             if (SettingsDAO.isMaintenanceOn()) {
                 JOptionPane.showMessageDialog(this,
-                        "Maintenance mode is ON — edits are not allowed.",
-                        "Edit Blocked",
+                        "Maintenance mode is ON — edits are disabled.",
+                        "Blocked",
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
@@ -129,7 +212,7 @@ public class AssessmentEditorPanel extends JPanel implements Refreshable {
 
             if (!ok) {
                 JOptionPane.showMessageDialog(this,
-                        "Cannot add: Total weight exceeds 100%");
+                        "Cannot add: total weight exceeds 100%");
                 return;
             }
 
@@ -142,14 +225,15 @@ public class AssessmentEditorPanel extends JPanel implements Refreshable {
         }
     }
 
+    // ---- Delete Component ----
     private void deleteSelectedComponent() {
 
-        // ⛔ Maintenance mode check
+        // Maintenance mode check
         try {
             if (SettingsDAO.isMaintenanceOn()) {
                 JOptionPane.showMessageDialog(this,
-                        "Maintenance mode is ON — edits are not allowed.",
-                        "Edit Blocked",
+                        "Maintenance mode is ON — edits are disabled.",
+                        "Blocked",
                         JOptionPane.WARNING_MESSAGE);
                 return;
             }
@@ -158,15 +242,15 @@ public class AssessmentEditorPanel extends JPanel implements Refreshable {
         int row = table.getSelectedRow();
 
         if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Select a component to delete.");
+            JOptionPane.showMessageDialog(this, "Select a component to delete");
             return;
         }
 
         try {
             List<Map<String, Object>> rows = InstructorDAO.getGradeComponents(sectionId);
-            int componentId = (int) rows.get(row).get("component_id");
+            int compId = (int) rows.get(row).get("component_id");
 
-            InstructorDAO.deleteGradeComponent(componentId);
+            InstructorDAO.deleteGradeComponent(compId);
             refresh();
 
         } catch (SQLException ex) {
