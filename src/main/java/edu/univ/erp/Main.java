@@ -1,6 +1,7 @@
 package edu.univ.erp;
 
 import edu.univ.erp.data.AuthDB;
+import edu.univ.erp.data.AdminCourseDAO;
 
 import java.sql.Connection;
 
@@ -17,5 +18,6 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        AdminCourseDAO.addSampleCourses();
     }
 }

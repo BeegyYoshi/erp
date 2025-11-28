@@ -76,4 +76,23 @@ public class AdminCourseDAO {
             return ps.executeUpdate() > 0;
         }
     }
+
+    public static void addSampleCourses() {
+        try {
+            for (int i = 1; i <= 100; i++) {
+                String code = "CS" + String.format("%03d", i);         // CS001, CS002 ...
+                String title = "Sample Course " + i;                   // Sample Course 1 ...
+                int credits = (i % 4) + 1;                            // 1–4 credits
+
+                AdminCourseDAO.insertCourse(code, title, credits);
+            }
+
+            System.out.println("Inserted 100 sample courses successfully!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Failed inserting sample courses: " + e.getMessage());
+        }
+    }
+
 }
